@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>Bilibili 获取注册时间</title>
+  <title>佳丽 查看中文的拼音</title>
   <meta name="keywords" content="哔哩哔哩, bilibili, 注册时间">
   <meta name="description" content="根据用户信息获取注册时间">
   <link href="https://cdn.bootcss.com" rel="dns-prefetch">
@@ -21,23 +21,19 @@
 </head>
 <body>
 <div id="app">
-  <h4 class="title">哔哩哔哩获取注册时间</h4>
+  <h4 class="title">佳丽 查看中文的拼音</h4>
 
   <div class="form">
-    <div class="get-user-info-link">
-      <a href="https://member.bilibili.com/x2/creative/h5/calendar/card?ts=1576425600&spm_id_from=333.788.b_636f6d6d656e74.6"
-         rel="noreferrer" target="_blank">获取自己的B站信息</a>
-    </div>
     <div class="user-info-input">
       <textarea id="userInfo" autocomplete="off" rows="2" style="min-height: 33px;"
-                placeholder="请粘贴全部数据" ></textarea>
+                placeholder="请输入中文" ></textarea>
       <svg class="close-icon hidden" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img"
            class="iconify iconify--mdi" width="32" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41z" fill="currentColor"></path></svg>
     </div>
 
-    <div class="submit-btn" id="submit">获取注册时间</div>
+    <div class="submit-btn" id="submit">获取拼音</div>
     <div class="short-url">
-      <div class="short-url-title">注册时间</div>
+      <div class="short-url-title">拼音</div>
       <div class="short-url-item bg-gray">
         <a id="short-url-value" rel="noreferrer" href="javascript:void(0)">
           <div class="short-url-value"></div>
@@ -48,15 +44,6 @@
         </div>
       </div>
     </div>
-  </div>
-  <div class="footer">
-    <a href="https://github.com/xlzy520/bili-register-time" target="_blank">
-      By 执笔看墨花开(求⭐️)
-    </a>
-
-    <a href="https://github.com/xlzy520/bili-register-time" class="logo logo-img-2x" target="_blank">
-      <svg class="octicon octicon-mark-github v-align-middle" height="32" viewBox="0 0 16 16" version="1.1" width="32" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
-    </a>
   </div>
   <div class="loading hidden">
     <div class="mask"></div>
@@ -90,40 +77,41 @@
     }).showToast();
   });
 
-  function getRegisterTime(data) {
-    const joinTimeArr = data.split('jointime":')
-    const joinTime = joinTimeArr.length > 1 && joinTimeArr[1].substr(0, 10)
-    return formatTime(joinTime * 1000)
-  }
-
-  function formatTime(timestamp) {
-    if (!timestamp) {
-      return 'Invalid Date'
-    }
-    return dayjs(timestamp).format('YYYY-MM-DD HH:mm:ss')
-  }
-
   function handleSubmit() {
     document.querySelector('#submit').addEventListener('click', () => {
       const userInfo = document.querySelector('#userInfo')
       let value = userInfo.value
       if (!value) {
-        ToastError('粘贴的内容为空')
+        ToastError('请输入中文')
         return
       }
-      const registerTime = getRegisterTime(value)
-      const registerTimeFormat = formatTime(registerTime)
-      if (registerTimeFormat !== 'Invalid Date') {
+      const url = `https://service-ngv6f3yg-1253419200.gz.apigw.tencentcs.com/release/pinyin?s=${value}`
+      toggleLoading(true)
+      fetch(url).then(res=> res.json()).then(res=> {
         const shortUrlValue = document.querySelector('.short-url-value')
         const copy = document.querySelector('.copy')
-        shortUrlValue.textContent = registerTimeFormat
+        console.log(res);
+        shortUrlValue.textContent = res.result.join('  ')
         document.querySelector('.copy').classList.remove('hidden')
         document.querySelector('.bg-gray').classList.remove('bg-gray')
         copy.click()
-      } else {
-        ToastError('粘贴的内容不符合格式要求，请检查是否复制完整!')
-      }
+      }).catch(() => {
+        ToastError('网络错误')
+      }).finally(() => {
+        toggleLoading(false)
+      })
     })
+  }
+
+  // 控制loading状态显示与隐藏的方法
+  function toggleLoading(show) {
+    const closeIcon = document.querySelector('.loading')
+    const classList = closeIcon.classList
+    if (show) {
+      classList.contains('hidden') && classList.remove('hidden')
+    } else {
+      classList.add('hidden')
+    }
   }
 
   // 控制输入框的关闭图标显示与隐藏的方法
