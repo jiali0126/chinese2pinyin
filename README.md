@@ -1,4 +1,4 @@
 # 中文转拼音
 
 ### 预览
-http://xlzy520.cn/chinese2pinyin/
+https://jiali0126.github.io/chinese2pinyin/
